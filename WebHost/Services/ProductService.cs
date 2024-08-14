@@ -4,6 +4,7 @@ using Domains.Models.BridgeEntity;
 using Infrastructure.DTO;
 using Infrastructure.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
+using WebHost.Exceptions;
 using WebHost.Services.IServices;
 
 namespace WebHost.Services
@@ -130,7 +131,8 @@ namespace WebHost.Services
 
             if (product == null)
             {
-                throw new KeyNotFoundException("Product not found");
+                throw new NotFoundException($"Product with ID {id} not found");
+                
             }
             product.ModifiedDate = DateTime.UtcNow;
             if (productDto.Name != null)
