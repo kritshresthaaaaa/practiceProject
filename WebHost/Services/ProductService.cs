@@ -3,6 +3,7 @@ using Domains.Models;
 using Domains.Models.BridgeEntity;
 using Infrastructure.DTO;
 using Infrastructure.Repository.IRepository;
+using Infrastructure.UoW;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 using WebHost.Exceptions;
@@ -12,11 +13,11 @@ namespace WebHost.Services
 {
     public class ProductService : IProductService
     {
-        private readonly IGenericRepository<Product> _repository;
 
-        public ProductService(IGenericRepository<Product> repository)
+        private readonly IUnitOfWork _unitOfWork;
+        public ProductService(IUnitOfWork unitOfWork)
         {
-            _repository = repository;
+            _unitOfWork = unitOfWork;
         }
 
 
@@ -32,7 +33,8 @@ namespace WebHost.Services
                 ModifiedDate = DateTime.UtcNow,
                 ProductCategories = productDto.CategoryIds.Select(c => new ProductCategory { CategoryId = c }).ToList()
             };
-            await _repository.AddAsync(product);
+            await _unitOfWork.Products.AddAsync(product);
+            await _unitOfWork.SaveAsync();
 
             var productResponse = new ProductResponseDTO
               (
@@ -47,15 +49,17 @@ namespace WebHost.Services
         }
         public async Task DeleteProductAsync(int id)
         {
-            await _repository.DeleteAsync(id);
+            await _unitOfWork.Products.DeleteAsync(id);
+            await _unitOfWork.SaveAsync();
         }
         public async Task SoftDeleteProductAsync(int id)
         {
-            await _repository.SoftDeleteAsync(id);
+            await _unitOfWork.Products.SoftDeleteAsync(id); 
+            await _unitOfWork.SaveAsync();
         }
         public async Task<ProductResponseDTO> GetProductByIdAsync(int id)
         {
-            var productIqueryable = await _repository.GetAllAsync();
+            var productIqueryable = await _unitOfWork.Products.GetAllAsync();
             var product = await productIqueryable.Include(p => p.ProductCategories).FirstOrDefaultAsync(p => p.Id == id);
 
 
@@ -78,20 +82,20 @@ namespace WebHost.Services
 
         public async Task<List<ProductStockDTO>> ReduceStockQuantitiesAsync(List<OrderDetailPostDTO> orderDetails)
         {
-         
-            var productList = await _repository.GetQueryable().Where(x => orderDetails.Select(y => y.ProductId).Contains(x.Id)).ToListAsync();
+
+            var productList = await _unitOfWork.Products.GetQueryable().Where(x => orderDetails.Select(y => y.ProductId).Contains(x.Id)).ToListAsync();
 
             // NULL CHECK Product List
 
             var productStockList = (from prod in productList
-                                      join order in orderDetails on prod.Id equals order.ProductId
-                                      let temp = prod.StockQuantity < order.Quantity
-                                      where temp == false
-                                      select new ProductStockDTO
-                                      {
-                                          ProductId = prod.Id,
-                                          RemainingStock = prod.StockQuantity - order.Quantity,
-                                      }).ToList();
+                                    join order in orderDetails on prod.Id equals order.ProductId
+                                    let temp = prod.StockQuantity < order.Quantity
+                                    where temp == false
+                                    select new ProductStockDTO
+                                    {
+                                        ProductId = prod.Id,
+                                        RemainingStock = prod.StockQuantity - order.Quantity,
+                                    }).ToList();
 
             //Null Check for productStockList
 
@@ -134,7 +138,7 @@ namespace WebHost.Services
 
         public async Task<IEnumerable<ProductResponseDTO>> GetProductsAsync()
         {
-            var products = await _repository.GetAllAsync();  // still not executed
+            var products = await _unitOfWork.Products.GetAllAsync();  // still not executed
 
 
             var productswithCategory = products.Include(p => p.ProductCategories).ToList(); // executed here, making it eager loading because we want to include the product categories
@@ -152,7 +156,7 @@ namespace WebHost.Services
         }
         public async Task UpdateProductPatchAsync(int id, ProductPatchDTO productDto)
         {
-            var product = await _repository.GetByIdAsync(id);
+            var product = await _unitOfWork.Products.GetByIdAsync(id);
 
             if (product == null)
             {
@@ -176,7 +180,8 @@ namespace WebHost.Services
             {
                 product.Description = productDto.Description;
             }
-            await _repository.UpdateAsync(product);
+            await _unitOfWork.Products.UpdateAsync(product);
+            await _unitOfWork.SaveAsync();
         }
     }
 }

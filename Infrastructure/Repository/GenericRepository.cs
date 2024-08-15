@@ -35,17 +35,14 @@ namespace Infrastructure.Repository
         public async Task AddAsync(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
         }
         public async Task AddRangeAsync(IEnumerable<TEntity> entities)
         {
             await _dbSet.AddRangeAsync(entities);
-            await _context.SaveChangesAsync();
         }
         public async Task UpdateAsync(TEntity entity)
         {
             _context.Entry(entity).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
@@ -54,7 +51,6 @@ namespace Infrastructure.Repository
             if (entity != null)
             {
                 _dbSet.Remove(entity);
-                await _context.SaveChangesAsync();
             }
         }
         public async Task SoftDeleteAsync(int id)
@@ -74,7 +70,6 @@ namespace Infrastructure.Repository
 
                     _dbSet.Remove(entity); // if the property is not boolean then we remove the entity 
                 }
-                await _context.SaveChangesAsync();
 
             }
         }
