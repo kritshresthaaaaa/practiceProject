@@ -1,6 +1,7 @@
 using Infrastructure.Data;
 using Infrastructure.Repository;
 using Infrastructure.Repository.IRepository;
+using Infrastructure.UoW;
 using Microsoft.EntityFrameworkCore;
 using WebHost.Middlewares;
 using WebHost.Services;
@@ -16,6 +17,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IOrderDetailService, OrderDetailService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
