@@ -2,6 +2,7 @@ using Infrastructure.Data;
 using Infrastructure.Repository;
 using Infrastructure.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
+using WebHost.Middlewares;
 using WebHost.Services;
 using WebHost.Services.IServices;
 
@@ -32,6 +33,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<CustomMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthorization();
 

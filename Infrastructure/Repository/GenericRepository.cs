@@ -27,7 +27,7 @@ namespace Infrastructure.Repository
         {
             return await _dbSet.FindAsync(id);
         }
-        public IQueryable<TEntity> GetQueryable()
+        public IQueryable<TEntity> GetQueryable()   
         {
             return _dbSet.AsQueryable();              
         }

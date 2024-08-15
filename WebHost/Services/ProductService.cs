@@ -3,6 +3,7 @@ using Domains.Models;
 using Domains.Models.BridgeEntity;
 using Infrastructure.DTO;
 using Infrastructure.Repository.IRepository;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 using WebHost.Exceptions;
 using WebHost.Services.IServices;
@@ -77,31 +78,56 @@ namespace WebHost.Services
 
         public async Task<List<ProductStockDTO>> ReduceStockQuantitiesAsync(List<OrderDetailPostDTO> orderDetails)
         {
-            var productStockList = new List<ProductStockDTO>();
+         
+            var productList = await _repository.GetQueryable().Where(x => orderDetails.Select(y => y.ProductId).Contains(x.Id)).ToListAsync();
 
-            foreach (var detail in orderDetails)
-            {
-                var product = await _repository.GetByIdAsync(detail.ProductId);
+            // NULL CHECK Product List
 
-                if (product == null)
-                {
-                    throw new Exception($"Product with ID {detail.ProductId} not found");
-                }
+            var productStockList = (from prod in productList
+                                      join order in orderDetails on prod.Id equals order.ProductId
+                                      let temp = prod.StockQuantity < order.Quantity
+                                      where temp == false
+                                      select new ProductStockDTO
+                                      {
+                                          ProductId = prod.Id,
+                                          RemainingStock = prod.StockQuantity - order.Quantity,
+                                      }).ToList();
 
-                if (product.StockQuantity < detail.Quantity)
-                {
-                    throw new Exception($"Insufficient stock for Product ID {detail.ProductId}");
-                }
+            //Null Check for productStockList
 
-                product.StockQuantity -= detail.Quantity;
-                await _repository.UpdateAsync(product);
+            //foreach (var updateProduct in productList)
+            //{
 
-                productStockList.Add(new ProductStockDTO
-                {
-                    ProductId = product.Id,
-                    RemainingStock = product.StockQuantity
-                });
-            }
+            //    updateProduct.StockQuantity = productStockList.FirstOrDefault(x => x.ProductId == updateProduct.Id)!.RemainingStock;
+            //    await _repository.UpdateAsync(updateProduct);
+            //}
+
+
+
+
+            //foreach (var detail in orderDetails)
+            //{
+            //    var product = await _repository.GetByIdAsync(detail.ProductId);
+
+            //    if (product == null)
+            //    {
+            //        throw new Exception($"Product with ID {detail.ProductId} not found");
+            //    }
+
+            //    if (product.StockQuantity < detail.Quantity)
+            //    {
+            //        throw new Exception($"Insufficient stock for Product ID {detail.ProductId}");
+            //    }
+
+            //    product.StockQuantity -= detail.Quantity;
+            //    await _repository.UpdateAsync(product);
+
+            //    productStockList.Add(new ProductStockDTO
+            //    {
+            //        ProductId = product.Id,
+            //        RemainingStock = product.StockQuantity
+            //    });
+            //}
 
             return productStockList;
         }
@@ -124,7 +150,6 @@ namespace WebHost.Services
 
             )).ToList();
         }
-
         public async Task UpdateProductPatchAsync(int id, ProductPatchDTO productDto)
         {
             var product = await _repository.GetByIdAsync(id);
@@ -132,7 +157,7 @@ namespace WebHost.Services
             if (product == null)
             {
                 throw new NotFoundException($"Product with ID {id} not found");
-                
+
             }
             product.ModifiedDate = DateTime.UtcNow;
             if (productDto.Name != null)

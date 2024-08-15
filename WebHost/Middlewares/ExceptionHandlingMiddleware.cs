@@ -9,7 +9,7 @@ public class ExceptionHandlingMiddleware
 
     private readonly ILogger<ExceptionHandlingMiddleware> _logger; 
 
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger) 
     {
         _next = next;
         _logger = logger;
@@ -31,11 +31,11 @@ public class ExceptionHandlingMiddleware
 
     private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        context.Response.ContentType = "application/json";
-        HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
+        context.Response.ContentType = "application/json"; // Set the content type of the response to application/json.
+        HttpStatusCode statusCode = HttpStatusCode.InternalServerError; 
         string result;
 
-        if (exception is AppException appException)
+        if (exception is AppException appException) 
         {
             statusCode = appException.StatusCode;
 
