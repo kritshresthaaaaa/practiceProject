@@ -30,3 +30,5 @@ msbuild.wrn
 
 # Visual Studio 2015
 .vs/
+/WebHost/appsettings.json
+/WebHost/appsettings.Development.json
