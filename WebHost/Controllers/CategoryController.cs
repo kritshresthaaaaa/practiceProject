@@ -2,6 +2,7 @@
 using Infrastructure.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebHost.DTO.BaseResponse;
 using WebHost.Services.IServices;
 
 namespace InventoryMS.Controllers
@@ -22,23 +23,20 @@ namespace InventoryMS.Controllers
         {
 
             var categories = await _categoryService.GetCategoriesAsync();
-            return Ok(categories);
+            return Ok(new ApiResponse<IEnumerable<CategoryResponseDTO>>(categories));
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<CategoryResponseDTO>> GetCategory(int id)
         {
             var cateogry = await _categoryService.GetCategoryByIdAsync(id);
-            if (cateogry == null)
-            {
-                return NotFound();
-            }
-            return Ok(cateogry);
+            return Ok(new ApiResponse<CategoryResponseDTO>(cateogry));
         }
 
         [HttpPost]
         public async Task<ActionResult<CategoryResponseDTO>> CreateCategory([FromBody] CategoryPostDTO categoryPostDTO)
         {
             var newCategory = await _categoryService.CreateCategoryAsync(categoryPostDTO);
+            /*return CreatedAtAction(nameof(GetCategory), new { id = newCategory.Id }, newCategory);*/
             return CreatedAtAction(nameof(GetCategory), new { id = newCategory.Id }, newCategory);
         }
         [HttpDelete]

@@ -1,6 +1,7 @@
 ﻿using Domains.Models;
 using Infrastructure.DTO;
 using Infrastructure.Repository.IRepository;
+using WebHost.Exceptions;
 using WebHost.Services.IServices;
 
 
@@ -48,10 +49,14 @@ namespace WebHost.Services
         public async Task<CategoryResponseDTO> GetCategoryByIdAsync(int id)
         {
             var category = await _repository.GetByIdAsync(id);
+            if (category == null)
+            {
+                throw new NotFoundException($"Category with id {id} not found");
+            }
             return new CategoryResponseDTO
             (
-                Id : category.Id,
-                Name : category.CategoryName
+                Id: category.Id,
+                Name: category.CategoryName
             );
         }
         public Task UpdateCategoryAsync(int id, Category categoryDto)

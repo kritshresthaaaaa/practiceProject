@@ -15,7 +15,6 @@ namespace Infrastructure.UoW
         IGenericRepository<Order> Orders { get; }
         IGenericRepository<OrderDetail> OrderDetails { get; }
         IGenericRepository<Customer> Customers { get; }
-
         Task<int> SaveAsync();
 
     }

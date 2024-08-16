@@ -3,6 +3,7 @@ using Infrastructure.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using WebHost.DTO.BaseResponse;
 using WebHost.Services.IServices;
 
 namespace InventoryMS.Controllers
@@ -21,7 +22,7 @@ namespace InventoryMS.Controllers
         public async Task<ActionResult<IEnumerable<CustomerResponseDTO>>> GetCustomers()
         {
             var customers = await _customerService.GetCustomersAsync();
-            return Ok(customers);
+            return Ok(new ApiResponse<IEnumerable<CustomerResponseDTO>>(customers));
         }
         [HttpGet("{id}")]
         public async Task<ActionResult<CustomerResponseDTO>> GetCustomer(int id)
@@ -31,7 +32,7 @@ namespace InventoryMS.Controllers
             {
                 return NotFound();
             }
-            return Ok(customer);
+            return Ok(new ApiResponse<CustomerResponseDTO>(customer));
         }
         [HttpPost]
         public async Task<ActionResult<CustomerResponseDTO>> CreateCustomer([FromBody] CustomerPostDTO customerPostDTO)

@@ -45,7 +45,6 @@ public class ExceptionHandlingMiddleware
         {
             result = JsonConvert.SerializeObject(new { error = "An unexpected error occurred." });
         }
-
         context.Response.StatusCode = (int)statusCode;
         return context.Response.WriteAsync(result);
     }

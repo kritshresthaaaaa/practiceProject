@@ -2,6 +2,7 @@
 using Infrastructure.DTO;
 using Microsoft.AspNetCore.Mvc;
 using WebHost.DTO;
+using WebHost.DTO.BaseResponse;
 using WebHost.Services.IServices;
 
 namespace InventoryMS.Controllers
@@ -25,21 +26,22 @@ namespace InventoryMS.Controllers
         public async Task<ActionResult<IEnumerable<OrderResponseDTO>>> GetSales()
         {
             var sales = await _saleService.GetSalesAsync();
-            return Ok(sales);
+
+            return Ok(new ApiResponse<IEnumerable<OrderResponseDTO>>(sales));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrderPostDTO>> GetSale(int id)
+        public async Task<ActionResult<OrderResponseDTO>> GetSale(int id)
         {
             var sale = await _saleService.GetSaleByIdAsync(id);
             if (sale == null)
             {
                 return NotFound();
             }
-            return Ok(sale);
+            return Ok(new ApiResponse<OrderResponseDTO>(sale));
         }
         [HttpPost]
-        public async Task<ActionResult<OrderPostDTO>> CreateSale(OrderPostDTO saleDto)
+        public async Task<ActionResult<OrderResponseDTO>> CreateSale(OrderPostDTO saleDto)
         {
             var productStockList = await _productService.ReduceStockQuantitiesAsync(saleDto.OrderDetails);
             var postSales = new OrderPostDTOController()

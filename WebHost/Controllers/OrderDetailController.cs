@@ -2,6 +2,7 @@
 using Infrastructure.DTO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebHost.DTO.BaseResponse;
 using WebHost.Services.IServices;
 
 namespace InventoryMS.Controllers
@@ -23,14 +24,14 @@ namespace InventoryMS.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrderDetailResponseDTO>> GetOrderDetailByOrderId(int id)
+        public async Task<ActionResult<OrderDetailFromOrderIdResponseDTO>>GetOrderDetailByOrderId(int id)
         {
             var orderDetail = await _orderDetailService.GetOrderDetailByOrderIdAsync(id);
             if (orderDetail == null)
             {
                 return NotFound();
             }
-            return Ok(orderDetail);
+            return Ok(new ApiResponse<OrderDetailFromOrderIdResponseDTO> (orderDetail));
         }
     }
 }

@@ -3,6 +3,7 @@ using Infrastructure.DTO;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using WebHost.DTO.BaseResponse;
 using WebHost.Services.IServices;
 
 namespace InventoryMS.Controllers
@@ -22,7 +23,7 @@ namespace InventoryMS.Controllers
         public async Task<ActionResult<IEnumerable<ProductResponseDTO>>> GetProducts()
         {
             var products = await _productService.GetProductsAsync();
-            return Ok(products);
+            return Ok(new ApiResponse<IEnumerable<ProductResponseDTO>>(products));
         }
 
         [HttpGet("{id}")]
