@@ -1,10 +1,9 @@
-﻿
-using Infrastructure.DTO;
+﻿using Domains.DTO;
+using Domains.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using WebHost.DTO.BaseResponse;
-using WebHost.Services.IServices;
 
 namespace InventoryMS.Controllers
 {

@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Net;
-using WebHost.Exceptions;
-
+using Application.Exceptions;
 public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;  // RequestDelegate is a delegate that represents the next middleware in the pipeline.
@@ -48,37 +47,5 @@ public class ExceptionHandlingMiddleware
         context.Response.StatusCode = (int)statusCode;
         return context.Response.WriteAsync(result);
     }
-/*    private Task HandleExceptionAsync(HttpContext context, Exception exception)
-    {
-        context.Response.ContentType = "application/json";
-        HttpStatusCode statusCode;
-        string result;
-
-        switch (exception)
-        {
-            case AppException appException:
-                statusCode = appException.StatusCode;
-                result = JsonConvert.SerializeObject(new { error = appException.Message, code = appException.ErrorCode });
-                break;
-
-            case KeyNotFoundException keyNotFoundException:
-                statusCode = HttpStatusCode.NotFound;
-                result = JsonConvert.SerializeObject(new { error = keyNotFoundException.Message });
-                break;
-
-            case UnauthorizedAccessException unauthorizedAccessException:
-                statusCode = HttpStatusCode.Unauthorized;
-                result = JsonConvert.SerializeObject(new { error = unauthorizedAccessException.Message });
-                break;
-
-            default:
-                statusCode = HttpStatusCode.InternalServerError;
-                result = JsonConvert.SerializeObject(new { error = "An unexpected error occurred." });
-                break;
-        }
-
-        context.Response.StatusCode = (int)statusCode;
-        return context.Response.WriteAsync(result);
-    }*/
 
 }

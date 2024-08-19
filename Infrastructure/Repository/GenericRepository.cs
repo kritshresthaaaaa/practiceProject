@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+using Domains.Interfaces.IGenericRepository;
 using Domains.Models.BaseEntity;
 using Infrastructure.Data;
-using Infrastructure.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Repository
 {

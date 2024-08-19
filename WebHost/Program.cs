@@ -1,11 +1,12 @@
+using Application.Services;
+using Domains.Interfaces.IGenericRepository;
+using Domains.Interfaces.IServices;
+using Domains.Interfaces.IUnitofWork;
 using Infrastructure.Data;
 using Infrastructure.Repository;
-using Infrastructure.Repository.IRepository;
 using Infrastructure.UoW;
 using Microsoft.EntityFrameworkCore;
 using WebHost.Middlewares;
-using WebHost.Services;
-using WebHost.Services.IServices;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,40 +1,65 @@
-﻿using Domains.Models;
+﻿using Domains.Interfaces.IGenericRepository;
+using Domains.Interfaces.IUnitofWork;
+using Domains.Models.BaseEntity;
+using Infrastructure.Data;
 using Infrastructure.Repository;
-using Infrastructure.Repository.IRepository;
-using Infrastructure.UoW;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Data
+namespace Infrastructure.UoW
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork, IDisposable
     {
         private readonly ApplicationDbContext _context;
-        public IGenericRepository<Product> Products { get; private set; }
-        public IGenericRepository<Category> Categories { get; private set; }
-        public IGenericRepository<Order> Orders { get; private set; }
-        public IGenericRepository<OrderDetail> OrderDetails { get; private set; }
-        public IGenericRepository<Customer> Customers { get; private set; }
+        private IDbContextTransaction _transaction;
+        private readonly ConcurrentDictionary<Type, object> _repositories;
+
         public UnitOfWork(ApplicationDbContext context)
         {
             _context = context;
-            Products = new GenericRepository<Product>(_context);
-            Categories = new GenericRepository<Category>(_context);
-            Orders = new GenericRepository<Order>(_context);
-            OrderDetails = new GenericRepository<OrderDetail>(_context);
-            Customers = new GenericRepository<Customer>(_context);
+            _repositories = new ConcurrentDictionary<Type, object>();
         }
-        public void Dispose()
+
+        public IGenericRepository<T> GetGenericRepository<T>() where T : Entity
         {
-            _context.Dispose();
+            if (!_repositories.ContainsKey(typeof(T)))
+            {
+                var repository = new GenericRepository<T>(_context);
+                _repositories[typeof(T)] = repository;
+            }
+
+            return (IGenericRepository<T>)_repositories[typeof(T)];
         }
 
         public async Task<int> SaveAsync()
         {
             return await _context.SaveChangesAsync();
+        }
+
+        public async Task BeginTransactionAsync()
+        {
+            _transaction = await _context.Database.BeginTransactionAsync();
+        }
+
+        public async Task CommitTransactionAsync()
+        {
+            await _transaction.CommitAsync();
+            await _transaction.DisposeAsync();
+        }
+
+        public async Task RollbackTransactionAsync()
+        {
+            await _transaction.RollbackAsync();
+            await _transaction.DisposeAsync();
+        }
+
+        public void Dispose()
+        {
+            _transaction?.Dispose();
+            _context.Dispose();
         }
     }
 }
