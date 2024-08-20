@@ -19,6 +19,8 @@ namespace Infrastructure.Repository
         {
             return _dbSet; // _dbSet consists of queryable data
         }
+    
+
         public async Task<TEntity> GetByIdAsync(int id)
         {
             return await _dbSet.FindAsync(id);

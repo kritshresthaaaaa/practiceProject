@@ -29,8 +29,6 @@ namespace Application.Services
             return categoryResponse;
 
         }
-
-
         public async Task<IEnumerable<CategoryResponseDTO>> GetCategoriesAsync()
         {
             var categories = await _repository.GetAllAsync();

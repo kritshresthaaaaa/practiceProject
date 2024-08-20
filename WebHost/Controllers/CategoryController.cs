@@ -1,6 +1,7 @@
 ﻿
 using Domains.DTO;
 using Domains.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebHost.DTO.BaseResponse;
@@ -9,6 +10,7 @@ namespace InventoryMS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+ 
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
@@ -33,6 +35,7 @@ namespace InventoryMS.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<ActionResult<CategoryResponseDTO>> CreateCategory([FromBody] CategoryPostDTO categoryPostDTO)
         {
             var newCategory = await _categoryService.CreateCategoryAsync(categoryPostDTO);

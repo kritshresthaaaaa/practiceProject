@@ -30,7 +30,6 @@ namespace Infrastructure.UoW
                 var repository = new GenericRepository<T>(_context);
                 _repositories[typeof(T)] = repository;
             }
-
             return (IGenericRepository<T>)_repositories[typeof(T)];
         }
 
