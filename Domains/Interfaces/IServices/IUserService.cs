@@ -1,4 +1,6 @@
-﻿using Domains.Interfaces.IGenericRepository;
+﻿using Domains.DTO;
+using Domains.DTO.BaseResponse;
+using Domains.Interfaces.IGenericRepository;
 using Domains.Models;
 using System;
 using System.Collections.Generic;
@@ -10,8 +12,7 @@ namespace Application.Services
 {
     public interface IUserService
     {
-        Task<string> RegisterUserAsync(User user, string confirmPassword);
-        Task<string> AuthenticateUserAsync(string username, string password);
+        Task<ApiResponse<LoginResponseDTO>> LoginAsync(LoginRequestDTO loginRequestDTO);
     }
 
 }

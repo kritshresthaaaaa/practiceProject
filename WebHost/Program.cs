@@ -14,6 +14,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
@@ -22,6 +23,9 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IOrderDetailService, OrderDetailService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IUserValidator, UserValidator>();
+builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(); builder.Services.AddSwaggerGen(c => {
     c.SwaggerDoc("v1", new OpenApiInfo
@@ -52,7 +56,7 @@ builder.Services.AddSwaggerGen(); builder.Services.AddSwaggerGen(c => {
 }); builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")),
     ServiceLifetime.Scoped);
-builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<TokenGenerator>();
 
 builder.Services.AddAuthentication(cfg =>
 {
@@ -74,13 +78,7 @@ builder.Services.AddAuthentication(cfg =>
 
 });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
-});
-
-
+builder.Services.AddAuthorization();
 var app = builder.Build();
 app.UseAuthentication();
 // Configure the HTTP request pipeline.

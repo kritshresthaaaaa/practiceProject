@@ -1,48 +1,44 @@
-﻿using BCrypt.Net;
+﻿using Application.Constants;
+using BCrypt.Net;
+using Domains.DTO;
+using Domains.DTO.BaseResponse;
 using Domains.Interfaces.IGenericRepository;
+using Domains.Interfaces.IServices;
 using Domains.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Application.Services
 {
     public class UserService : IUserService
     {
-        private readonly IGenericRepository<User> _genericRepository;
-        private readonly TokenService _tokenService;
+        private readonly IUserValidator _userValidator;
+        private readonly ITokenGenerator _tokenGenerator;
 
-        public UserService(IGenericRepository<User> genericRepository, TokenService tokenService)
+        public UserService(IUserValidator userValidator, ITokenGenerator tokenGenerator)
         {
-            _genericRepository = genericRepository;
-            _tokenService = tokenService;
+            _userValidator = userValidator;
+            _tokenGenerator = tokenGenerator;
         }
 
-        public async Task<string> RegisterUserAsync(User user, string confirmPassword)
+        public async Task<ApiResponse<LoginResponseDTO>> LoginAsync(LoginRequestDTO loginRequestDTO)
         {
-            if (user.Password != confirmPassword)
-                return "Password and Confirm Password do not match";
+            if (loginRequestDTO == null)
+                return new ApiResponse<LoginResponseDTO>("Invalid request");
 
-            var userQuery = _genericRepository.GetQueryable().Where(u => u.Username == user.Username);
-            var userExists = await userQuery.AnyAsync();
+            var user = _userValidator.ValidateUser(loginRequestDTO);
+            if (user == null)
+                return new ApiResponse<LoginResponseDTO>("Invalid username or password");
 
-            if (userExists)
-                return "User already exists";
+            var tokenValue = _tokenGenerator.GenerateToken(user);
+            var userDTO = new LoginResponseDTO(tokenValue, user.Id.ToString(), user.Username);
 
-            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
-            await _genericRepository.AddAsync(user);
-
-            return "User registered successfully";
-        }
-
-        public async Task<string> AuthenticateUserAsync(string username, string password)
-        {
-            var user = await _genericRepository.GetQueryable().FirstOrDefaultAsync(u => u.Username == username);
-
-            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
-                return null;
-
-            return _tokenService.GenerateJwtToken(user);
+            return new ApiResponse<LoginResponseDTO>(userDTO, "Login successful");
         }
     }
 }

@@ -53,7 +53,7 @@ namespace Application.Services
         }
         public async Task SoftDeleteProductAsync(int id)
         {
-            await _unitOfWork.GetGenericRepository<Product>().SoftDeleteAsync(id); 
+            await _unitOfWork.GetGenericRepository<Product>().SoftDeleteAsync(id);
             await _unitOfWork.SaveAsync();
         }
         public async Task<ProductResponseDTO> GetProductByIdAsync(int id)
@@ -64,7 +64,7 @@ namespace Application.Services
 
             if (product == null)
             {
-                return null;
+                throw new NotFoundException($"Product with ID {id} not found.");
             }
 
             var productResponse = new ProductResponseDTO
@@ -84,6 +84,10 @@ namespace Application.Services
 
             var productList = await _unitOfWork.GetGenericRepository<Product>().GetQueryable().Where(x => orderDetails.Select(y => y.ProductId).Contains(x.Id)).ToListAsync();
 
+            if (!productList.Any())
+            {
+                throw new NotFoundException("No products found for the given order details.");
+            }
             // NULL CHECK Product List
 
             var productStockList = (from prod in productList
@@ -96,7 +100,18 @@ namespace Application.Services
                                         RemainingStock = prod.StockQuantity - order.Quantity,
                                     }).ToList();
 
+            if (!productStockList.Any())
+            {
+                throw new Exception("Insufficient stock for some products.");
+            }
             //Null Check for productStockList
+            foreach (var product in productList)
+            {
+                var stockDTO = productStockList.First(ps => ps.ProductId == product.Id);
+                product.StockQuantity = stockDTO.RemainingStock;
+                await _unitOfWork.GetGenericRepository<Product>().UpdateAsync(product);
+            }
+            await _unitOfWork.SaveAsync();
 
             //foreach (var updateProduct in productList)
             //{
@@ -137,12 +152,12 @@ namespace Application.Services
 
         public async Task<IEnumerable<ProductResponseDTO>> GetProductsAsync()
         {
-            var products = await _unitOfWork.GetGenericRepository<Product>().GetAllAsync();  // still not executed
+            var productsQuery = await _unitOfWork.GetGenericRepository<Product>().GetAllAsync();  // still not executed
 
 
-            var productswithCategory = products.Include(p => p.ProductCategories).ToList(); // executed here, making it eager loading because we want to include the product categories
+            var products = await productsQuery.Include(p => p.ProductCategories).ToListAsync();            // executed here, making it eager loading because we want to include the product categories
 
-            return productswithCategory.Select(p => new ProductResponseDTO // for each product in productwithCategory, we are creating a new ProductResponseDTO object
+            return products.Select(p => new ProductResponseDTO // for each product in productwithCategory, we are creating a new ProductResponseDTO object
             (
                 Id: p.Id,
                 Name: p.Name,
