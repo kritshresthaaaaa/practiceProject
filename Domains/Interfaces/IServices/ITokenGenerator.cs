@@ -9,6 +9,6 @@ namespace Domains.Interfaces.IServices
 {
     public interface ITokenGenerator
     {
-        string GenerateToken(User user);
+        string GenerateToken(ApplicationUser user,IList<string> roles);
     }
 }

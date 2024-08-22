@@ -13,6 +13,7 @@ namespace Application.Services
     public interface IUserService
     {
         Task<ApiResponse<LoginResponseDTO>> LoginAsync(LoginRequestDTO loginRequestDTO);
+        Task<ApiResponse<string>> RegisterAsync(RegisterRequestDTO registerRequestDTO);
     }
 
 }

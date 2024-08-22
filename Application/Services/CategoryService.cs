@@ -2,16 +2,17 @@
 using Domains.DTO;
 using Domains.Interfaces.IGenericRepository;
 using Domains.Interfaces.IServices;
+using Domains.Interfaces.IUnitofWork;
 using Domains.Models;
 
 namespace Application.Services
 {
     public class CategoryService : ICategoryService
     {
-        private readonly IGenericRepository<Category> _repository;
-        public CategoryService(IGenericRepository<Category> repository)
+        private readonly IUnitOfWork _unitOfWork;
+        public CategoryService(IUnitOfWork unitOfWork)
         {
-            _repository = repository;
+            _unitOfWork = unitOfWork;
         }
         public async Task<CategoryResponseDTO> CreateCategoryAsync(CategoryPostDTO categoryPostDto)
         {
@@ -19,7 +20,7 @@ namespace Application.Services
             {
                 CategoryName = categoryPostDto.CategoryName
             };
-            await _repository.AddAsync(category);
+            await _unitOfWork.GetGenericRepository<Category>().AddAsync(category);
 
             var categoryResponse = new CategoryResponseDTO
             (
@@ -31,7 +32,7 @@ namespace Application.Services
         }
         public async Task<IEnumerable<CategoryResponseDTO>> GetCategoriesAsync()
         {
-            var categories = await _repository.GetAllAsync();
+            var categories = await _unitOfWork.GetGenericRepository<Category>().GetAllAsync();
             return categories.Select(c => new CategoryResponseDTO
             (
                 c.Id,
@@ -41,11 +42,12 @@ namespace Application.Services
         }
         public async Task SoftDeleteCategoryAsync(int id)
         {
-            await _repository.SoftDeleteAsync(id);
+            await _unitOfWork.GetGenericRepository<Category>().SoftDeleteAsync(id);
+            await _unitOfWork.SaveAsync();
         }
         public async Task<CategoryResponseDTO> GetCategoryByIdAsync(int id)
         {
-            var category = await _repository.GetByIdAsync(id);
+            var category = await _unitOfWork.GetGenericRepository<Category>().GetByIdAsync(id);
             if (category == null)
             {
                 throw new NotFoundException($"Category with id {id} not found");

@@ -101,22 +101,25 @@ namespace Application.Services
         public async Task SoftDeleteSaleAsync(int id)
         {
             await _orderRepository.SoftDeleteAsync(id);
+
         }
         public async Task<IEnumerable<OrderResponseDTO>> GetSalesPerCustomerAsync(int id)
         {
             var salesQueryable = await _orderRepository.GetAllAsync();
-            var sales = await salesQueryable.Where(s => s.CustomerId == id).Include(s => s.OrderDetails).ThenInclude(d => d.Product).ToListAsync();
-            var saleResponse = sales.Select(s => new OrderResponseDTO
-            (
-                s.Id,
-                s.OrderDetails.Sum(d => d.Quantity * d.Product.Price),
-                s.OrderDate,
-                s.OrderDetails.First().ProductId,
-                s.OrderDetails.First().Product.Name
+            var sales = await salesQueryable
+      .Where(s => s.CustomerId == id)
+      .Include(s => s.OrderDetails)
+      .ThenInclude(d => d.Product)
+      .Select(s => new OrderResponseDTO(
+          s.Id,
+          s.OrderDetails.Sum(d => d.Quantity * d.Product.Price),
+          s.OrderDate,
+          s.OrderDetails.FirstOrDefault().ProductId, 
+          s.OrderDetails.FirstOrDefault().Product.Name 
+      ))
+      .ToListAsync();
 
-            )).ToList();
-
-            return saleResponse;
+            return sales;
         }
         // difference between Ienumerable and IQueryable is that IEnumerable is in-memory data and IQueryable is a query that is not executed yet
         // what does in-memory mean?

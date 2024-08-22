@@ -26,7 +26,8 @@ namespace InventoryMS.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "User")]
+        /*    [Authorize(Roles = Roles.Admin)]*/
+      
         public async Task<ActionResult<IEnumerable<CategoryResponseDTO>>> GetCategories()
         {
             var userId = _currentUserService.UserId;
@@ -39,7 +40,6 @@ namespace InventoryMS.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "User,Admin")]
         public async Task<ActionResult<CategoryResponseDTO>> GetCategory(int id)
         {
             var cateogry = await _categoryService.GetCategoryByIdAsync(id);

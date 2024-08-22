@@ -33,6 +33,16 @@ namespace WebHost.Controllers
 
             return Ok(response);
         }
+        [HttpPost]
+        [Route("Register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequestDTO registerRequestDTO)
+        {
+            var response = await _userService.RegisterAsync(registerRequestDTO);
+            if (!response.Success)
+                return BadRequest(response);
+
+            return Ok(response);
+        }
     }
 
 }
