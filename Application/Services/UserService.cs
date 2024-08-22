@@ -34,18 +34,17 @@ namespace Application.Services
             if (loginRequestDTO == null)
                 return new ApiResponse<LoginResponseDTO>("Invalid request");
 
-            var user = await _userManager.FindByEmailAsync(loginRequestDTO.Username);
+            var user = await _userManager.FindByEmailAsync(loginRequestDTO.Email);
             if (user == null)
-                return new ApiResponse<LoginResponseDTO>("Invalid username or password");
+                return new ApiResponse<LoginResponseDTO>("Invalid email or password");
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, loginRequestDTO.Password, false);
             if (!result.Succeeded)
-                return new ApiResponse<LoginResponseDTO>("Invalid username or password");
+                return new ApiResponse<LoginResponseDTO>("Invalid email or password");
 
             var roles = await _userManager.GetRolesAsync(user);
             var tokenValue = _tokenGenerator.GenerateToken(user, roles);
             var userDTO = new LoginResponseDTO(tokenValue, user.Id.ToString(), user.UserName);
-
             return new ApiResponse<LoginResponseDTO>(userDTO, "Login successful");
         }
 
@@ -53,19 +52,23 @@ namespace Application.Services
         {
             if (registerRequestDTO == null)
                 return new ApiResponse<string>("Invalid request");
-
+            if (registerRequestDTO.Password != registerRequestDTO.ConfirmPassword)
+            {
+                return new ApiResponse<string>("Passwords do not match");
+            }
             var user = new ApplicationUser
             {
                 FirstName = registerRequestDTO.FirstName,
                 LastName = registerRequestDTO.LastName,
                 Email = registerRequestDTO.Email,
-                UserName = registerRequestDTO.Email
+                UserName = registerRequestDTO.Email,
+
             };
             var result = await _userManager.CreateAsync(user, registerRequestDTO.Password);
             if (!result.Succeeded)
                 return new ApiResponse<string>(string.Join(", ", result.Errors));
             await _userManager.AddToRoleAsync(user, Roles.User);
-            return new ApiResponse<string>("User registered successfully");
+            return new ApiResponse<string>(null,"User registered successfully");
         }
     }
 }

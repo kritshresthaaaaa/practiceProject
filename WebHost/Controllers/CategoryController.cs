@@ -1,4 +1,5 @@
 ﻿
+using Application.Constants;
 using Domains.DTO;
 using Domains.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +11,7 @@ namespace InventoryMS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-
+    
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
@@ -26,8 +27,8 @@ namespace InventoryMS.Controllers
         }
 
         [HttpGet]
-        /*    [Authorize(Roles = Roles.Admin)]*/
-      
+        [Authorize(Roles = Roles.User)]
+
         public async Task<ActionResult<IEnumerable<CategoryResponseDTO>>> GetCategories()
         {
             var userId = _currentUserService.UserId;
