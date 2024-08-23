@@ -7,7 +7,7 @@ namespace Domains.Interfaces.IServices
         Task<IEnumerable<CategoryResponseDTO>> GetCategoriesAsync();
         Task<CategoryResponseDTO> GetCategoryByIdAsync(int id);
         Task<CategoryResponseDTO> CreateCategoryAsync(CategoryPostDTO categoryPostDto);
-/*        Task UpdateCategoryAsync(int id, Category categoryDto);*/
+        Task UpdateCategoryAsync(int id, CategoryPostDTO categoryPatchDto);
         Task SoftDeleteCategoryAsync(int id);
     }
 }

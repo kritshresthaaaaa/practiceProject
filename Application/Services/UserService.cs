@@ -4,6 +4,7 @@ using Domains.DTO;
 using Domains.DTO.BaseResponse;
 using Domains.Interfaces.IGenericRepository;
 using Domains.Interfaces.IServices;
+using Domains.Interfaces.IUnitofWork;
 using Domains.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,13 +21,13 @@ namespace Application.Services
     {
         private readonly ITokenGenerator _tokenGenerator;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UserService(ITokenGenerator tokenGenerator, UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+        public UserService(ITokenGenerator tokenGenerator, UserManager<ApplicationUser> userManager, IUnitOfWork unitOfWork)
         {
             _userManager = userManager;
             _tokenGenerator = tokenGenerator;
-            _signInManager = signInManager;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ApiResponse<LoginResponseDTO>> LoginAsync(LoginRequestDTO loginRequestDTO)
@@ -38,8 +39,8 @@ namespace Application.Services
             if (user == null)
                 return new ApiResponse<LoginResponseDTO>("Invalid email or password");
 
-            var result = await _signInManager.CheckPasswordSignInAsync(user, loginRequestDTO.Password, false);
-            if (!result.Succeeded)
+            var result = await _userManager.CheckPasswordAsync(user, loginRequestDTO.Password);
+            if (!result)
                 return new ApiResponse<LoginResponseDTO>("Invalid email or password");
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -56,19 +57,41 @@ namespace Application.Services
             {
                 return new ApiResponse<string>("Passwords do not match");
             }
-            var user = new ApplicationUser
+            try
             {
-                FirstName = registerRequestDTO.FirstName,
-                LastName = registerRequestDTO.LastName,
-                Email = registerRequestDTO.Email,
-                UserName = registerRequestDTO.Email,
+                await _unitOfWork.BeginTransactionAsync();
+                var user = new ApplicationUser
+                {
+                    FirstName = registerRequestDTO.FirstName,
+                    LastName = registerRequestDTO.LastName,
+                    Email = registerRequestDTO.Email,
+                    UserName = registerRequestDTO.Email,
+                    City = registerRequestDTO.City,
+                    Address = registerRequestDTO.Address,
+                };
+                var result = await _userManager.CreateAsync(user, registerRequestDTO.Password);
+                if (!result.Succeeded)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    var errorDescriptions = result.Errors.Select(error => error.Description).ToList();
+                    var errorMessage = string.Join(", ", errorDescriptions); // Joining error messages  with a comma separator 
+                    return new ApiResponse<string>(errorMessage);
+                }
 
-            };
-            var result = await _userManager.CreateAsync(user, registerRequestDTO.Password);
-            if (!result.Succeeded)
-                return new ApiResponse<string>(string.Join(", ", result.Errors));
-            await _userManager.AddToRoleAsync(user, Roles.User);
-            return new ApiResponse<string>(null,"User registered successfully");
+                var roleResult = await _userManager.AddToRoleAsync(user, Roles.User);
+                if (!roleResult.Succeeded)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    return new ApiResponse<string>(string.Join(", ", roleResult.Errors));
+                }
+                await _unitOfWork.CommitTransactionAsync();
+                return new ApiResponse<string>(null, "User registered successfully");
+            }
+            catch (DbUpdateException ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                return new ApiResponse<string>(ex.Message);
+            }
         }
     }
 }

@@ -45,13 +45,17 @@ namespace InventoryMS.Controllers
             {
                 return BadRequest();
             }
-            
+
 
             return CreatedAtAction(nameof(GetProduct), new { id = newProduct.Id }, newProduct);
         }
         [HttpPatch("{id}")]
         public async Task<ActionResult> UpdateProductPatch(int id, [FromBody] ProductPatchDTO productDTO)
         {
+            if (id == 0 || productDTO == null)
+            {
+                throw new ArgumentNullException();
+            }
             await _productService.UpdateProductPatchAsync(id, productDTO);
             return NoContent();
         }

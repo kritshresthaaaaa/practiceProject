@@ -15,6 +15,7 @@ namespace Domains.Interfaces.IGenericRepository
         Task AddAsync(TEntity entity);
         Task AddRangeAsync(IEnumerable<TEntity> entities);
         Task UpdateAsync(TEntity entity);
+        Task UpdateRangeAsync(IEnumerable<TEntity> entities);
         Task SoftDeleteAsync(int id);
         Task DeleteAsync(int id);
         IQueryable<TEntity> GetQueryable(); // this is used to get the queryable data from the database 

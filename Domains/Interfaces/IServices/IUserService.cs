@@ -15,5 +15,4 @@ namespace Application.Services
         Task<ApiResponse<LoginResponseDTO>> LoginAsync(LoginRequestDTO loginRequestDTO);
         Task<ApiResponse<string>> RegisterAsync(RegisterRequestDTO registerRequestDTO);
     }
-
 }

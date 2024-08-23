@@ -1,5 +1,4 @@
-﻿
-using Domains.Models;
+﻿using Domains.Models;
 using Domains.Models.BridgeEntity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -8,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Infrastructure.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -32,9 +31,9 @@ namespace Infrastructure.Data
             modelBuilder.Entity<ProductCategory>().HasKey(pc => new { pc.ProductId, pc.CategoryId });
 
             //inserting manual roles
-            modelBuilder.Entity<IdentityRole>().HasData(
-                new IdentityRole { Id = "1", Name = "Admin", NormalizedName = "ADMIN" },
-                new IdentityRole { Id = "2", Name = "User", NormalizedName = "USER" }
+            modelBuilder.Entity<ApplicationRole>().HasData(
+                new ApplicationRole { Id = Guid.NewGuid(), Name = "Admin", NormalizedName = "ADMIN", Description="It's role Admin"},
+                new ApplicationRole { Id = Guid.NewGuid(), Name = "User", NormalizedName = "USER", Description = "It's role User" }
             );
         }
 

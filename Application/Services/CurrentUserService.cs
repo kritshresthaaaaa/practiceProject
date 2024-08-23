@@ -20,14 +20,7 @@ public class CurrentUserService : ICurrentUserService
         }
     }
 
-    public string Username
-    {
-        get
-        {
-            var usernameClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name);
-            return usernameClaim?.Value ?? string.Empty;
-        }
-    }
+    public string Username => _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Name)?.Value ?? string.Empty;
     public string[] Roles
     {
         get

@@ -18,7 +18,9 @@ namespace Application.Services
         {
             var category = new Category
             {
-                CategoryName = categoryPostDto.CategoryName
+                CategoryName = categoryPostDto.CategoryName,
+                CreatedDate =  DateTime.UtcNow,
+                ModifiedDate = DateTime.UtcNow,
             };
             await _unitOfWork.GetGenericRepository<Category>().AddAsync(category);
             await _unitOfWork.SaveAsync();
@@ -60,7 +62,7 @@ namespace Application.Services
             );
         }
         //left to complete
-       /* public async Task UpdateCategoryAsync(int id, Category categoryDto)
+        public async Task UpdateCategoryAsync(int id, CategoryPostDTO categoryPatchDto)
         {
             var category = await _unitOfWork.GetGenericRepository<Category>().GetByIdAsync(id);
             if (category == null)
@@ -68,11 +70,12 @@ namespace Application.Services
                 throw new NotFoundException($"Category with id {id} not found");
             }
             category.ModifiedDate = DateTime.UtcNow;
-            if (categoryDto.CategoryName != null)
+            if (categoryPatchDto.CategoryName != null)
             {
-                categoryDto.CategoryName = categoryDto.CategoryName;
+                categoryPatchDto.CategoryName = categoryPatchDto.CategoryName;
             }
-
-        }*/
+            await _unitOfWork.GetGenericRepository<Category>().UpdateAsync(category);
+            await _unitOfWork.SaveAsync();
+        }
     }
 }

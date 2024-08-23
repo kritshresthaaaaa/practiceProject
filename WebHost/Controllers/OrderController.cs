@@ -58,10 +58,12 @@ namespace InventoryMS.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateSale(int id, OrderPostDTO saleDto)
         {
-            if (id != saleDto.CustomerId)
+           var productStockList = await _productService.ReduceStockQuantitiesAsync(saleDto.OrderDetails);
+            var postSales = new OrderPostDTOController()
             {
-                return BadRequest();
-            }
+                CustomerId = saleDto.CustomerId,
+                OrderDetailsWithProductRemaingStock = productStockList,
+            };
 
             await _saleService.UpdateSaleAsync(id, saleDto);
             return NoContent();

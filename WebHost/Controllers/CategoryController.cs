@@ -11,7 +11,7 @@ namespace InventoryMS.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    
+
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
@@ -41,6 +41,7 @@ namespace InventoryMS.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = Roles.Admin)]
         public async Task<ActionResult<CategoryResponseDTO>> GetCategory(int id)
         {
             var cateogry = await _categoryService.GetCategoryByIdAsync(id);
@@ -60,6 +61,16 @@ namespace InventoryMS.Controllers
             await _categoryService.SoftDeleteCategoryAsync(id);
             return NoContent();
         }
-    
+        [HttpPatch("{id}")]
+        public async Task<ActionResult> UpdateCategory(int id, [FromBody] CategoryPostDTO categoryPatchDto)
+        {
+            if (id == 0 || categoryPatchDto == null)
+            {
+                throw new ArgumentNullException();
+            }
+            await _categoryService.UpdateCategoryAsync(id, categoryPatchDto);
+            return NoContent();
+        }
+
     }
 }

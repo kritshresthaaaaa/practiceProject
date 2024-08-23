@@ -19,7 +19,6 @@ namespace Infrastructure.UoW
         {
             _context = context;
         }
-
         public IGenericRepository<T> GetGenericRepository<T>() where T : Entity
         {
             return new GenericRepository<T>(_context);
@@ -49,7 +48,7 @@ namespace Infrastructure.UoW
 
         public void Dispose()
         {
-            _transaction?.Dispose();
+            _transaction.Dispose();
             _context.Dispose();
         }
     }
