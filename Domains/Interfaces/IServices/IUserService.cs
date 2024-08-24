@@ -14,5 +14,7 @@ namespace Application.Services
     {
         Task<ApiResponse<LoginResponseDTO>> LoginAsync(LoginRequestDTO loginRequestDTO);
         Task<ApiResponse<string>> RegisterAsync(RegisterRequestDTO registerRequestDTO);
+        Task<ApplicationUser> GetUserById(Guid userId);
+        Task ConfirmEmailAsync(ApplicationUser user, string token);
     }
 }

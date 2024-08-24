@@ -43,6 +43,22 @@ namespace WebHost.Controllers
 
             return Ok(response);
         }
+        [HttpPost]
+        [Route("Confirm-Email")]
+        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequestDTO confirmEmailRequestDTO)
+        {
+            if (confirmEmailRequestDTO.UserId == Guid.Empty || confirmEmailRequestDTO.Token == null)
+            {
+                return BadRequest("Invalid request");
+            }
+            var user = await _userService.GetUserById(confirmEmailRequestDTO.UserId);
+            if (user == null)
+            {
+                return NotFound("Invalid request");
+            }
+            await _userService.ConfirmEmailAsync(user,confirmEmailRequestDTO.Token);
+            return Ok(new ApiResponse<string>(null, "Email confirmed successfully"));
+        }
     }
 
 }

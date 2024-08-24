@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Application.Exceptions;
+using Newtonsoft.Json;
 using System.Net;
-using Application.Exceptions;
+namespace WebHost.Middlewares;
 public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;  // RequestDelegate is a delegate that represents the next middleware in the pipeline.
