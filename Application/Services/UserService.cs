@@ -26,7 +26,7 @@ namespace Application.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<UserService> _logger;
- 
+
 
         public UserService(ILogger<UserService> logger, ITokenGenerator tokenGenerator, UserManager<ApplicationUser> userManager, IUnitOfWork unitOfWork)
         {
@@ -49,13 +49,32 @@ namespace Application.Services
             }
             return user;
         }
-        public async Task ConfirmEmailAsync(ApplicationUser user, string token)
+        public async Task<ApplicationUser> GetUserByEmail(string email)
         {
-            if (user == null || token == null)
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new BadRequestException("Invalid email");
+            }
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                throw new NotFoundException("User not found");
+            }
+            return user;
+        }
+        public async Task ConfirmEmailAsync(ConfirmEmailRequestDTO confirmEmailRequestDTO)
+        {
+            if (confirmEmailRequestDTO == null)
             {
                 throw new BadRequestException("Invalid request");
             }
-            var result = await _userManager.ConfirmEmailAsync(user, token);
+            var user = await _userManager.FindByIdAsync(confirmEmailRequestDTO.UserId.ToString());
+            if (user == null)
+            {
+                throw new NotFoundException("User not found");
+            }
+      
+            var result = await _userManager.ConfirmEmailAsync(user, confirmEmailRequestDTO.Token);
             if (!result.Succeeded)
             {
                 var errorDescriptions = result.Errors.Select(error => error.Description).ToList();
@@ -100,7 +119,7 @@ namespace Application.Services
             {
                 user.LockoutEnd = DateTime.UtcNow.AddMinutes(30);
                 user.AccessFailedCount = 0;
-                
+
             }
             await _userManager.UpdateAsync(user);
         }
@@ -144,5 +163,42 @@ namespace Application.Services
 
             return new ApiResponse<string>(null, "User registered successfully");
         }
+        public async Task<ApiResponse<string>> ForgotPasswordAsync(ForgotPasswordDTORequest forgotPasswordDTO)
+        {
+            if (forgotPasswordDTO == null)
+            {
+                return new ApiResponse<string>("Invalid request");
+            }
+            var user = await _userManager.FindByEmailAsync(forgotPasswordDTO.Email);
+            if (user == null)
+            {
+                return new ApiResponse<string>("User not found");
+            }
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            _logger.LogInformation("Password reset token: " + token);
+            return new ApiResponse<string>(null, "Password reset token is ready!");
+        }
+        public async Task<ApiResponse<string>> ResetPasswordAsync(ResetPasswordDTORequest resetPasswordDTO)
+        {
+            if (resetPasswordDTO == null)
+            {
+                throw new BadRequestException("Invalid request");
+            }
+            var user = await _userManager.FindByEmailAsync(resetPasswordDTO.Email);
+            if (user == null)
+            {
+                throw new NotFoundException("User not found");
+            }
+            var result = await _userManager.ResetPasswordAsync(user, resetPasswordDTO.Token, resetPasswordDTO.NewPassword);
+            if (!result.Succeeded)
+            {
+                var errorDescriptions = result.Errors.Select(error => error.Description).ToList();
+                var errorMessage = string.Join(", ", errorDescriptions);
+                throw new BadRequestException(errorMessage);
+            }
+            return new ApiResponse<string>(null, "Password reset successfully");
+
+        }
+
     }
 }

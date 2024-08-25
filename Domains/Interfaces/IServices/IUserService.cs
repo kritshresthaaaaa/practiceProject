@@ -12,9 +12,13 @@ namespace Application.Services
 {
     public interface IUserService
     {
+        Task<ApiResponse<string>> ResetPasswordAsync(ResetPasswordDTORequest resetPasswordDTO);
+
         Task<ApiResponse<LoginResponseDTO>> LoginAsync(LoginRequestDTO loginRequestDTO);
         Task<ApiResponse<string>> RegisterAsync(RegisterRequestDTO registerRequestDTO);
         Task<ApplicationUser> GetUserById(Guid userId);
-        Task ConfirmEmailAsync(ApplicationUser user, string token);
+        Task ConfirmEmailAsync(ConfirmEmailRequestDTO confirmEmailRequestDTO);
+        Task<ApplicationUser> GetUserByEmail(string email);
+        Task<ApiResponse<string>> ForgotPasswordAsync(ForgotPasswordDTORequest forgotPasswordDTORequest);
     }
 }

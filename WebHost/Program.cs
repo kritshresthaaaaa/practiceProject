@@ -30,7 +30,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(); builder.Services.AddSwaggerGen(c =>
+builder.Services.AddSwaggerGen(); 
+builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {

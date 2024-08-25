@@ -51,14 +51,42 @@ namespace WebHost.Controllers
             {
                 return BadRequest("Invalid request");
             }
-            var user = await _userService.GetUserById(confirmEmailRequestDTO.UserId);
-            if (user == null)
-            {
-                return NotFound("Invalid request");
-            }
-            await _userService.ConfirmEmailAsync(user,confirmEmailRequestDTO.Token);
+            await _userService.ConfirmEmailAsync(confirmEmailRequestDTO);
             return Ok(new ApiResponse<string>(null, "Email confirmed successfully"));
         }
+        [HttpPost]
+        [Route("Forgot-Password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDTORequest forgotPasswordRequestDTO)
+        {
+            if (forgotPasswordRequestDTO == null)
+            {
+                return BadRequest("Invalid request");
+            }
+            var response = await _userService.ForgotPasswordAsync(forgotPasswordRequestDTO);
+            if (!response.Success)
+            {
+                return BadRequest(response.Message);
+            }
+            return Ok(response);
+        }
+        [HttpPost]
+
+        [Route("Reset-Password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTORequest resetPasswordDTORequest)
+        {
+            if (resetPasswordDTORequest == null)
+            {
+                return BadRequest("Invalid request");
+            }
+            var response = await _userService.ResetPasswordAsync(resetPasswordDTORequest);
+            if (!response.Success)
+            {
+                return BadRequest(response.Message);
+            }
+            return Ok(response);
+        }
+
+
     }
 
 }
