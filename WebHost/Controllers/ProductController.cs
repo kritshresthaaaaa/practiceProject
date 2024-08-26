@@ -1,4 +1,5 @@
-﻿using Domains.DTO;
+﻿using Application.Services;
+using Domains.DTO;
 using Domains.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -18,12 +19,12 @@ namespace InventoryMS.Controllers
             _productService = productService;
         }
 
-        [HttpGet]
+/*        [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductResponseDTO>>> GetProducts()
         {
             var products = await _productService.GetProductsAsync();
             return Ok(new ApiResponse<IEnumerable<ProductResponseDTO>>(products));
-        }
+        }*/
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductResponseDTO>> GetProduct(int id)
@@ -35,7 +36,22 @@ namespace InventoryMS.Controllers
             }
             return Ok(product);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetPaginatedProducts([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var paginatedProducts = await _productService.GetPaginatedProductsAsync(pageIndex, pageSize);
 
+                var response = new ApiResponse<PaginatedList<ProductResponseDTO>>(paginatedProducts);
+                return Ok(response); 
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new ApiResponse<string>(ex.Message); 
+                return BadRequest(errorResponse);
+            }
+        }
         [HttpPost]
         public async Task<ActionResult<ProductResponseDTO>> CreateProduct([FromBody] ProductPostDTO productPostDTO)
         {

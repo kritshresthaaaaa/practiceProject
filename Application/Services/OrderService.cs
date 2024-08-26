@@ -114,8 +114,8 @@ namespace Application.Services
           s.Id,
           s.OrderDetails.Sum(d => d.Quantity * d.Product.Price),
           s.OrderDate,
-          s.OrderDetails.FirstOrDefault().ProductId, 
-          s.OrderDetails.FirstOrDefault().Product.Name 
+          s.OrderDetails.FirstOrDefault().ProductId,
+          s.OrderDetails.FirstOrDefault().Product.Name
       ))
       .ToListAsync();
 

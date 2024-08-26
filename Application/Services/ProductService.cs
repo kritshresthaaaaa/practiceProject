@@ -1,5 +1,6 @@
 ﻿
 using Application.Exceptions;
+using Application.Extensions;
 using Domains.DTO;
 using Domains.Interfaces.IServices;
 using Domains.Interfaces.IUnitofWork;
@@ -19,7 +20,25 @@ namespace Application.Services
             _unitOfWork = unitOfWork;
         }
 
+        public async Task<PaginatedList<ProductResponseDTO>> GetPaginatedProductsAsync(int pageIndex, int pageSize)
+        {
+            var productsQuery = await _unitOfWork.GetGenericRepository<Product>().GetAllAsync();
+            var products = productsQuery.Include(p => p.ProductCategories);
+            var productDTOs = products.Select(p => new ProductResponseDTO
+            (
+                p.Id,
+                p.Name,
+                p.Price,
+                p.StockQuantity,
+                p.Description,
+                p.ProductCategories.Select(c => c.CategoryId).ToList()
+            ));
 
+
+
+            return await productDTOs.ToPaginatedListAsync(pageIndex, pageSize);
+
+        }
         public async Task<ProductResponseDTO> CreateProductAsync(ProductPostDTO productDto)
         {
             var product = new Product
@@ -46,6 +65,7 @@ namespace Application.Services
               );
             return productResponse;
         }
+
         public async Task DeleteProductAsync(int id)
         {
             await _unitOfWork.GetGenericRepository<Product>().DeleteAsync(id);
