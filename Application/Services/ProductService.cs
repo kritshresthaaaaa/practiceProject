@@ -31,13 +31,11 @@ namespace Application.Services
                 p.Price,
                 p.StockQuantity,
                 p.Description,
-                p.ProductCategories.Select(c => c.CategoryId).ToList()
+                p.ProductCategories.Select(c => c.CategoryId).ToList(),
+                p.CreatedDate.ToFormattedString("yyyy-MM-dd HH:mm:ss"),
+                p.ModifiedDate.ToFormattedString("yyyy-MM-dd HH:mm:ss")
             ));
-
-
-
             return await productDTOs.ToPaginatedListAsync(pageIndex, pageSize);
-
         }
         public async Task<ProductResponseDTO> CreateProductAsync(ProductPostDTO productDto)
         {
@@ -61,7 +59,10 @@ namespace Application.Services
                   Price: product.Price,
                   StockQuantity: product.StockQuantity,
                   Description: product.Description,
-                  CategoryIds: product.ProductCategories.Select(pc => pc.CategoryId).ToList()
+                  CategoryIds: product.ProductCategories.Select(pc => pc.CategoryId).ToList(),
+                  CreatedAt: product.CreatedDate.ToFormattedString(),
+                  ModifiedAt: product.ModifiedDate.ToFormattedString()
+
               );
             return productResponse;
         }
@@ -94,7 +95,9 @@ namespace Application.Services
                 Price: product.Price,
                 StockQuantity: product.StockQuantity,
                 Description: product.Description,
-                CategoryIds: product.ProductCategories.Select(pc => pc.CategoryId).ToList()
+                CategoryIds: product.ProductCategories.Select(pc => pc.CategoryId).ToList(),
+                CreatedAt: product.CreatedDate.ToFormattedString(),
+                ModifiedAt: product.ModifiedDate.ToFormattedString()
             );
             return productResponse;
         }
@@ -184,7 +187,9 @@ namespace Application.Services
                 Price: p.Price,
                 StockQuantity: p.StockQuantity,
                 Description: p.Description,
-                CategoryIds: p.ProductCategories.Select(pc => pc.CategoryId).ToList()
+                CategoryIds: p.ProductCategories.Select(pc => pc.CategoryId).ToList(),
+                CreatedAt: p.CreatedDate.ToFormattedString(),
+                ModifiedAt: p.ModifiedDate.ToFormattedString()
 
             )).ToList();
         }

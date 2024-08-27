@@ -61,8 +61,6 @@ namespace InventoryMS.Controllers
             {
                 return BadRequest();
             }
-
-
             return CreatedAtAction(nameof(GetProduct), new { id = newProduct.Id }, newProduct);
         }
         [HttpPatch("{id}")]

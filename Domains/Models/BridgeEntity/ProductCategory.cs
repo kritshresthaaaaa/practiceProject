@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domains.Models.BaseEntity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Domains.Models.BridgeEntity
 {
-    public class ProductCategory 
+    public class ProductCategory :Entity
     {
         [ForeignKey("Product")]
         public int ProductId { get; set; }

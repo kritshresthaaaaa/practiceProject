@@ -1,4 +1,5 @@
-﻿using Domains.DTO;
+﻿using Application.Services;
+using Domains.DTO;
 using Domains.Models;
 namespace Domains.Interfaces.IServices
 {
@@ -9,5 +10,6 @@ namespace Domains.Interfaces.IServices
         Task<CategoryResponseDTO> CreateCategoryAsync(CategoryPostDTO categoryPostDto);
         Task UpdateCategoryAsync(int id, CategoryPostDTO categoryPatchDto);
         Task SoftDeleteCategoryAsync(int id);
+        Task<PaginatedList<CategoryWithProductsResponseDTO>> GetTotalProductsWithCategoryAsync(int pageIndex, int pageSize);
     }
 }

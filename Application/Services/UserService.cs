@@ -143,6 +143,7 @@ namespace Application.Services
                 Address = registerRequestDTO.Address,
             };
 
+
             var result = await _userManager.CreateAsync(user, registerRequestDTO.Password);
             if (!result.Succeeded)
             {

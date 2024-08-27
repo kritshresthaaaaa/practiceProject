@@ -1,9 +1,14 @@
 ﻿using Application.Exceptions;
+using Application.Extensions;
+using Application.Services;
 using Domains.DTO;
 using Domains.Interfaces.IGenericRepository;
 using Domains.Interfaces.IServices;
 using Domains.Interfaces.IUnitofWork;
 using Domains.Models;
+using Domains.Models.BridgeEntity;
+using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace Application.Services
 {
@@ -19,7 +24,7 @@ namespace Application.Services
             var category = new Category
             {
                 CategoryName = categoryPostDto.CategoryName,
-                CreatedDate =  DateTime.UtcNow,
+                CreatedDate = DateTime.UtcNow,
                 ModifiedDate = DateTime.UtcNow,
             };
             await _unitOfWork.GetGenericRepository<Category>().AddAsync(category);
@@ -77,5 +82,36 @@ namespace Application.Services
             await _unitOfWork.GetGenericRepository<Category>().UpdateAsync(category);
             await _unitOfWork.SaveAsync();
         }
+        public async Task<PaginatedList<CategoryWithProductsResponseDTO>> GetTotalProductsWithCategoryAsync(int pageIndex, int pageSize)
+        {
+            var categories = await _unitOfWork.GetGenericRepository<Category>().GetAllAsync();
+            var products = _unitOfWork.GetGenericRepository<Product>().GetQueryable();
+            var productCategories = _unitOfWork.GetGenericRepository<ProductCategory>().GetQueryable();
+           var queryPC = from c in categories
+                         join pc in productCategories on c.Id equals pc.CategoryId
+                         join p in products on pc.ProductId equals p.Id
+                         group p by new { c.Id, c.CategoryName } into g
+                         select new CategoryWithProductsResponseDTO
+                         {
+                             Id = g.Key.Id,
+                             CategoryName = g.Key.CategoryName,
+                             TotalProducts = g.Count(),
+                             productResponseDTOs = g.Select(p => new ProductResponseDTO
+                             (
+                                 p.Id,
+                                 p.Name,
+                                 p.Price,
+                                 p.StockQuantity,
+                                 p.Description,
+                                 p.ProductCategories.Select(pc => pc.CategoryId).ToList(),
+                                 p.CreatedDate.ToString(),
+                                 p.ModifiedDate.ToString()
+                             )).ToList()
+                         };
+
+
+            return await queryPC.ToPaginatedListAsync(pageIndex, pageSize); ;
+        }
     }
 }
+

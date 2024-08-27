@@ -1,4 +1,5 @@
-﻿using Domains.DTO;
+﻿using Application.Exceptions;
+using Domains.DTO;
 using Domains.Interfaces.IGenericRepository;
 using Domains.Interfaces.IServices;
 using Domains.Models;
@@ -106,65 +107,54 @@ namespace Application.Services
         public async Task<IEnumerable<OrderResponseDTO>> GetSalesPerCustomerAsync(int id)
         {
             var salesQueryable = await _orderRepository.GetAllAsync();
-            var sales = await salesQueryable
-      .Where(s => s.CustomerId == id)
-      .Include(s => s.OrderDetails)
-      .ThenInclude(d => d.Product)
-      .Select(s => new OrderResponseDTO(
-          s.Id,
-          s.OrderDetails.Sum(d => d.Quantity * d.Product.Price),
-          s.OrderDate,
-          s.OrderDetails.FirstOrDefault().ProductId,
-          s.OrderDetails.FirstOrDefault().Product.Name
-      ))
-      .ToListAsync();
-
+            /*            var sales = await salesQueryable
+                  .Where(s => s.CustomerId == id)
+                  .Include(s => s.OrderDetails)
+                  .ThenInclude(d => d.Product)
+                  .Select(s => new OrderResponseDTO(
+                      s.Id,
+                      s.OrderDetails.Sum(d => d.Quantity * d.Product.Price),
+                      s.OrderDate,
+                      s.OrderDetails.FirstOrDefault().ProductId,
+                      s.OrderDetails.FirstOrDefault().Product.Name
+                  ))
+                  .ToListAsync();*/
+            var sales = from s in salesQueryable
+                        where s.CustomerId == id
+                        select new OrderResponseDTO
+                            (
+                                s.Id,
+                                s.OrderDetails.Sum(d => d.Quantity * d.Product.Price),
+                                s.OrderDate,
+                                s.OrderDetails.FirstOrDefault().ProductId,
+                                s.OrderDetails.FirstOrDefault().Product.Name
+                            );
             return sales;
         }
         // difference between Ienumerable and IQueryable is that IEnumerable is in-memory data and IQueryable is a query that is not executed yet
         // what does in-memory mean?
         // in-memory means that the data is stored in the memory of the application, so it is not stored in the database
-        public async Task UpdateSaleAsync(int id, OrderPostDTO orderDto)
+        public async Task UpdateSaleAsync(int id, OrderPostDTOController orderPostDTOController)
         {
-            var sale = await _orderRepository.GetByIdAsync(id);
-            if (sale == null)
+            var order = await _orderRepository.GetByIdAsync(id);
+            if (order == null)
             {
-                throw new Exception("Sale not found");
+                throw new NotFoundException($"Order with the id ${id} is not available");
             }
 
-            sale.OrderDetails.Clear(); // Clear the existing order details
-            // Update the order date and customer ID
-            sale.OrderDate = DateTime.UtcNow;
-            sale.CustomerId = orderDto.CustomerId;
-
-            foreach (var detail in orderDto.OrderDetails)
+            foreach (var detail in orderPostDTOController.OrderDetailsWithProductRemaingStock)
             {
-                var product = await _productRepository.GetByIdAsync(detail.ProductId);
-                if (product == null)
-                {
-                    throw new Exception($"Product with ID {detail.ProductId} not found");
-                }
-
-                if (detail.Quantity > product.StockQuantity)
-                {
-                    throw new Exception($"Not enough stock available for product {product.Name}");
-                }
-
-                // Update stock quantity
-                product.StockQuantity -= detail.Quantity;
-
-                // Create OrderDetail
                 var orderDetail = new OrderDetail
                 {
                     ProductId = detail.ProductId,
-                    Quantity = detail.Quantity,
-
+                    Quantity = detail.RemainingStock,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
                 };
-
-                sale.OrderDetails.Add(orderDetail);
-
+                order.OrderDetails.Add(orderDetail);
             }
-            await _orderRepository.UpdateAsync(sale);
+            order.ModifiedDate = DateTime.UtcNow;
+            await _orderRepository.UpdateAsync(order);
         }
         /*public async Task<IEnumerable<Order>> GetSalesPerDateAsync(DateTime date)
         {

@@ -10,6 +10,8 @@ namespace Domains.DTO
         decimal Price,
         int StockQuantity,
         string Description,
-        List<int> CategoryIds
+        List<int> CategoryIds,
+        string CreatedAt,
+        string ModifiedAt
     );
 }

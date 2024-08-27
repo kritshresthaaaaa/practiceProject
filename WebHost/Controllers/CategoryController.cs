@@ -1,5 +1,6 @@
 ﻿
 using Application.Constants;
+using Application.Services;
 using Domains.DTO;
 using Domains.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
@@ -27,8 +28,8 @@ namespace InventoryMS.Controllers
         }
 
         [HttpGet]
-/*        [Authorize(Roles = Roles.User)]
-*/
+        /*        [Authorize(Roles = Roles.User)]
+        */
         public async Task<ActionResult<IEnumerable<CategoryResponseDTO>>> GetCategories()
         {
             var userId = _currentUserService.UserId;
@@ -41,8 +42,9 @@ namespace InventoryMS.Controllers
         }
 
         [HttpGet("{id}")]
-/*        [Authorize(Roles = Roles.Admin)]
-*/        public async Task<ActionResult<CategoryResponseDTO>> GetCategory(int id)
+        /*        [Authorize(Roles = Roles.Admin)]
+        */
+        public async Task<ActionResult<CategoryResponseDTO>> GetCategory(int id)
         {
             var cateogry = await _categoryService.GetCategoryByIdAsync(id);
             return Ok(new ApiResponse<CategoryResponseDTO>(cateogry));
@@ -70,6 +72,13 @@ namespace InventoryMS.Controllers
             }
             await _categoryService.UpdateCategoryAsync(id, categoryPatchDto);
             return NoContent();
+        }
+        [HttpGet]
+        [Route("GetTotalProductsWithCateogry")]
+        public async Task<ActionResult<PaginatedList<CategoryWithProductsResponseDTO>>> GetTotalProductsWitheachCategory([FromQuery] int pageIndex = 1, [FromQuery] int pageSize=10)
+        {
+            var categories = await _categoryService.GetTotalProductsWithCategoryAsync(pageIndex, pageSize);
+            return Ok(new ApiResponse<PaginatedList<CategoryWithProductsResponseDTO>>(categories));
         }
 
     }

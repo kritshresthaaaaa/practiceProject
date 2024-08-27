@@ -7,7 +7,7 @@ namespace Domains.Interfaces.IServices
         Task<IEnumerable<OrderResponseDTO>> GetSalesAsync();
         Task<OrderResponseDTO> GetSaleByIdAsync(int id);
         Task<OrderResponseDTO> CreateSaleAsync(OrderPostDTOController saleDto);
-        Task UpdateSaleAsync(int id, OrderPostDTO saleDto);
+        Task UpdateSaleAsync(int id,OrderPostDTOController orderPostDTOController);
         Task SoftDeleteSaleAsync(int id);
         Task<IEnumerable<OrderResponseDTO>> GetSalesPerCustomerAsync(int customerId);
 /*        Task<IEnumerable<Order>> GetSalesPerDateAsync(DateTime date);

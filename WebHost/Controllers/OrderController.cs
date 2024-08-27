@@ -65,7 +65,7 @@ namespace InventoryMS.Controllers
                 OrderDetailsWithProductRemaingStock = productStockList,
             };
 
-            await _saleService.UpdateSaleAsync(id, saleDto);
+            await _saleService.UpdateSaleAsync(id,postSales);
             return NoContent();
         }
         [HttpDelete("{id}")]
